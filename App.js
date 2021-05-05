@@ -6,6 +6,7 @@ import LoginScreen from "./app/screens/LoginScreen";
 import LoadingScreen from "./app/screens/LoadingScreen";
 import firebase from "firebase";
 import { firebaseConfig } from "./config";
+import CameraScreen from "./app/screens/CameraScreen";
 firebase.initializeApp(firebaseConfig);
 
 const Navigator = createStackNavigator({
@@ -23,6 +24,12 @@ const Navigator = createStackNavigator({
   },
   Map: {
     screen: MapScreen,
+    navigationOptions: {
+      headerShown: false,
+    },
+  },
+  Camera: {
+    screen: CameraScreen,
     navigationOptions: {
       headerShown: false,
     },

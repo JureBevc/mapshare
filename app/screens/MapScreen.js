@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import MapView from "react-native-maps";
 import {
   StyleSheet,
@@ -9,39 +9,65 @@ import {
 } from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
+import { Camera } from "expo-camera";
 
-export default MapScreen = ({ navigation }) => {
-  return (
-    <SafeAreaView style={styles.container}>
-      <MapView style={styles.map} />
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          alignItems: "center",
-          paddingBottom: "5%",
-          pointerEvents: "none",
-        }}
-      >
-        <View>
-          <ImageButton
-            imageSource={require("../../assets/camera.png")}
-            width={50}
-            height={50}
-            customStyle={{
-              backgroundColor: Global.WHITE,
-              borderColor: Global.GRAY,
-              borderRadius: 45,
-              borderWidth: 2,
-              padding: 5,
-            }}
-            handlePress={() => alert("TODO")}
-          />
+export default class MapScreen extends Component {
+  state = {
+    hasCameraPermission: false,
+  };
+
+  getCameraPermission = async (onSuccess) => {
+    const { status } = await Camera.requestPermissionsAsync();
+    console.log(status);
+    this.state.hasCameraPermission = status === "granted";
+    if (this.state.hasCameraPermission) {
+      onSuccess();
+    }
+  };
+
+  render() {
+    return (
+      <SafeAreaView style={styles.container}>
+        <MapView style={styles.map} />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+            alignItems: "center",
+            paddingBottom: "5%",
+            pointerEvents: "none",
+          }}
+        >
+          <View>
+            <ImageButton
+              imageSource={require("../../assets/camera.png")}
+              width={50}
+              height={50}
+              customStyle={{
+                backgroundColor: Global.WHITE,
+                borderColor: Global.GRAY,
+                borderRadius: 45,
+                borderWidth: 2,
+                padding: 5,
+              }}
+              handlePress={() => {
+                if (this.state.hasCameraPermission) {
+                  console.log("Opening camera");
+                  this.props.navigation.navigate("Camera");
+                } else {
+                  console.log("Getting camera permission");
+                  this.getCameraPermission(() => {
+                    this.props.navigation.navigate("Camera");
+                  });
+                }
+              }}
+            />
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
-  );
-};
+      </SafeAreaView>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {

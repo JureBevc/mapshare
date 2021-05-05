@@ -21,8 +21,10 @@ const checkIfLoggedIn = (callback) => {
 };
 
 const LoadingScreen = ({ navigation }) => {
+  console.log("Loading screen");
   checkIfLoggedIn((isLoggedIn) => {
     if (isLoggedIn) {
+      navigation.navigate("Map");
     } else {
       navigation.navigate("Login");
     }
