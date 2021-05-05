@@ -10,7 +10,7 @@ import {
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
 
-export default MapScreen = () => {
+export default MapScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <MapView style={styles.map} />

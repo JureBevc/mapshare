@@ -1,10 +1,20 @@
 import React from "react";
 import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
-import MapScreen from "./app/screens/MapScreen.js";
-import LoginScreen from "./app/screens/LoginScreen.js";
+import MapScreen from "./app/screens/MapScreen";
+import LoginScreen from "./app/screens/LoginScreen";
+import LoadingScreen from "./app/screens/LoadingScreen";
+import firebase from "firebase";
+import { firebaseConfig } from "./config";
+firebase.initializeApp(firebaseConfig);
 
 const Navigator = createStackNavigator({
+  Loading: {
+    screen: LoadingScreen,
+    navigationOptions: {
+      headerShown: false,
+    },
+  },
   Login: {
     screen: LoginScreen,
     navigationOptions: {
