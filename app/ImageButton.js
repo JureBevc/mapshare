@@ -12,6 +12,7 @@ export default function ImageButton({
   width,
   height,
   customStyle,
+  handlePress,
 }) {
   return (
     <View
@@ -23,7 +24,7 @@ export default function ImageButton({
         pointerEvents="auto"
         activeOpacity={0.6}
         underlayColor="#DDDDDD"
-        onPress={() => alert("Hello, world!")}
+        onPress={handlePress}
         style={customStyle}
       >
         <Image

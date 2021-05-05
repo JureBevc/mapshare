@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 
-export default function TextButton({ text }) {
+export default function TextButton({ text, handlePress }) {
   return (
     <View
       style={{
@@ -9,7 +9,7 @@ export default function TextButton({ text }) {
       }}
     >
       <TouchableOpacity
-        onPress={() => alert("Hello, world!")}
+        onPress={handlePress}
         style={{
           backgroundColor: "#fff",
           borderWidth: 1,
