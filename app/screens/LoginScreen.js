@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { StyleSheet, View, Text, SafeAreaView, StatusBar } from "react-native";
 import Global from "../GlobalParameters";
 import TextButton from "../TextButton";
-import * as GoogleSignIn from "expo-google-sign-in";
 
 class LoginScreen extends Component {
   state = { user: null };

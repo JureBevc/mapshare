@@ -20,7 +20,7 @@ export default function ImageButton({
         alignSelf: "baseline",
       }}
     >
-      <TouchableHighlight
+      <TouchableOpacity
         pointerEvents="auto"
         activeOpacity={0.6}
         underlayColor="#DDDDDD"
@@ -34,7 +34,7 @@ export default function ImageButton({
           }}
           source={imageSource}
         />
-      </TouchableHighlight>
+      </TouchableOpacity>
     </View>
   );
 }
