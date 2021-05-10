@@ -6,29 +6,91 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  Image,
 } from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
 import { Camera } from "expo-camera";
+import { Marker } from "react-native-maps";
+import * as Location from "expo-location";
 
 export default class MapScreen extends Component {
   state = {
     hasCameraPermission: false,
+    hasLocationPermission: false,
+    location: null,
+    markers: [],
   };
 
   getCameraPermission = async (onSuccess) => {
+    console.log("Getting camera permission");
     const { status } = await Camera.requestPermissionsAsync();
     console.log(status);
     this.state.hasCameraPermission = status === "granted";
-    if (this.state.hasCameraPermission) {
+    if (onSuccess && this.state.hasCameraPermission) {
       onSuccess();
     }
   };
 
+  getLocationPermission = async (onSuccess) => {
+    console.log("Getting location permission");
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    console.log(status);
+    this.state.hasLocationPermission = status === "granted";
+    if (onSuccess && this.state.hasLocationPermission) {
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.LocationAccuracy.Lowest,
+      });
+      onSuccess(location);
+    }
+  };
+
+  componentDidMount() {
+    this.getLocationPermission((location) => {
+      let userMarker = {
+        latlng: {
+          latitude: location["coords"]["latitude"],
+          longitude: location["coords"]["longitude"],
+        },
+        title: "You",
+        image: require("../../assets/map-marker-user.png"),
+      };
+
+      this.setState({
+        location: {
+          latitude: location["coords"]["latitude"],
+          longitude: location["coords"]["longitude"],
+          latitudeDelta: 0.2,
+          longitudeDelta: 0.2,
+        },
+        markers: [...this.state.markers, userMarker],
+      });
+    });
+  }
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        <MapView style={styles.map} />
+        <MapView
+          region={this.state.location}
+          style={styles.map}
+          mapType="hybrid"
+        >
+          {this.state.markers.map((marker, index) => (
+            <Marker
+              style={styles.marker}
+              key={index}
+              coordinate={marker.latlng}
+              title={marker.title}
+            >
+              <Image
+                source={marker.image}
+                style={styles.marker}
+                resizeMode="contain"
+              />
+            </Marker>
+          ))}
+        </MapView>
         <View
           style={{
             flex: 1,
@@ -82,5 +144,9 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     bottom: 0,
+  },
+  marker: {
+    width: 50,
+    height: 50,
   },
 });
