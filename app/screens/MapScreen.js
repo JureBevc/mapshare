@@ -7,6 +7,7 @@ import {
   Platform,
   StatusBar,
   Image,
+  BackHandler,
 } from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
@@ -46,6 +47,11 @@ export default class MapScreen extends Component {
   };
 
   componentDidMount() {
+    BackHandler.addEventListener("hardwareBackPress", () => {
+      // Overwrite back button press
+      return true;
+    });
+
     this.getLocationPermission((location) => {
       let userMarker = {
         latlng: {
@@ -75,6 +81,7 @@ export default class MapScreen extends Component {
           region={this.state.location}
           style={styles.map}
           mapType="hybrid"
+          maxZoomLevel={15}
         >
           {this.state.markers.map((marker, index) => (
             <Marker
@@ -119,7 +126,10 @@ export default class MapScreen extends Component {
                 } else {
                   console.log("Getting camera permission");
                   this.getCameraPermission(() => {
-                    this.props.navigation.navigate("Camera");
+                    if (this.state.location)
+                      this.props.navigation.navigate("Camera", {
+                        location: this.state.location,
+                      });
                   });
                 }
               }}

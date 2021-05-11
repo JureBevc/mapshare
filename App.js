@@ -7,7 +7,7 @@ import LoadingScreen from "./app/screens/LoadingScreen";
 import firebase from "firebase";
 import { firebaseConfig } from "./config";
 import CameraScreen from "./app/screens/CameraScreen";
-firebase.initializeApp(firebaseConfig);
+import EditorScreen from "./app/screens/EditorScreen";
 
 const Navigator = createStackNavigator({
   Loading: {
@@ -34,8 +34,13 @@ const Navigator = createStackNavigator({
       headerShown: false,
     },
   },
+  Editor: {
+    screen: EditorScreen,
+    navigationOptions: {
+      headerShown: false,
+    },
+  },
 });
 
 const App = createAppContainer(Navigator);
-
 export default App;

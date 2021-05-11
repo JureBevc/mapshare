@@ -15,10 +15,13 @@ import Global from "../GlobalParameters";
 import TextButton from "../TextButton";
 import { CameraType } from "expo-camera/build/Camera.types";
 import ImageButton from "../ImageButton";
+import firebase from "firebase";
+import { db } from "../../config";
 
 export default class CameraScreen extends Component {
   constructor(props) {
     super(props);
+    console.log(props.navigation.state.params.location);
     this.camera = null;
     this.state = {
       cameraType: Camera.Constants.Type.back,
@@ -29,7 +32,11 @@ export default class CameraScreen extends Component {
     console.log("Taking picture");
     if (this.camera) {
       let photo = await this.camera.takePictureAsync();
-      console.log(photo);
+      let location = this.props.navigation.state.params.location;
+      this.props.navigation.navigate("Editor", {
+        location: location,
+        image: photo,
+      });
     }
   };
 

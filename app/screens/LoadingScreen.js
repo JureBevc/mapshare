@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -6,35 +6,50 @@ import {
   ActivityIndicator,
   Platform,
   StatusBar,
+  BackHandler,
 } from "react-native";
 import Global from "../GlobalParameters";
 import firebase from "firebase";
 
-const checkIfLoggedIn = (callback) => {
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      callback(true);
-    } else {
-      callback(false);
-    }
-  });
-};
+class LoadingScreen extends Component {
+  componentDidMount() {
+    /*
+    BackHandler.addEventListener("hardwareBackPress", () => {
+      // Overwrite back button press
+      return true;
+    });
+    */
 
-const LoadingScreen = ({ navigation }) => {
-  console.log("Loading screen");
-  checkIfLoggedIn((isLoggedIn) => {
-    if (isLoggedIn) {
-      navigation.navigate("Map");
-    } else {
-      navigation.navigate("Login");
-    }
-  });
-  return (
-    <SafeAreaView style={styles.container}>
-      <ActivityIndicator size="large" color={Global.PRIMARY_COLOR} />
-    </SafeAreaView>
-  );
-};
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      // The screen is focused
+
+      console.log("Loading screen checking if logged in");
+      let user = firebase.auth().currentUser;
+      if (user) {
+        console.log("User already authenticated");
+        this.props.navigation.navigate("Map");
+      } else {
+        console.log("No current user");
+        this.props.navigation.navigate("Login");
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    // Remove the event listener
+    this.focusListener.remove();
+  }
+
+  render() {
+    console.log("Loading screen");
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color={Global.PRIMARY_COLOR} />
+      </SafeAreaView>
+    );
+  }
+}
 
 export default LoadingScreen;
 
