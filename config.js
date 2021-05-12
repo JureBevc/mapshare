@@ -1,4 +1,5 @@
 import firebase from "firebase";
+import { LogBox } from "react-native";
 
 var firebaseConfig = {
   apiKey: "AIzaSyAtcs2uX2glfVzw8hhk_Zrn-8gnf5vhuLo",
@@ -20,3 +21,5 @@ if (!firebase.apps.length) {
 firebase.setLogLevel("silent");
 
 export const db = firebase.database();
+
+LogBox.ignoreLogs(["Setting a timer"]);

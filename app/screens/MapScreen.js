@@ -14,6 +14,9 @@ import Global from "../GlobalParameters";
 import { Camera } from "expo-camera";
 import { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import UserData from "../UserData";
+import { db } from "../../config";
+import firebase from "firebase";
 
 export default class MapScreen extends Component {
   state = {
@@ -47,34 +50,75 @@ export default class MapScreen extends Component {
   };
 
   componentDidMount() {
-    BackHandler.addEventListener("hardwareBackPress", () => {
-      // Overwrite back button press
-      return true;
-    });
-
     this.getLocationPermission((location) => {
+      UserData.location = {
+        latitude: location["coords"]["latitude"],
+        longitude: location["coords"]["longitude"],
+        latitudeDelta: 0.2,
+        longitudeDelta: 0.2,
+      };
+
+      this.setState({
+        location: UserData.location,
+      });
+      this.updateMapMarkers();
+    });
+  }
+
+  checkForMapUpdate() {
+    let params = this.props.navigation.state.params;
+    if (params && params.updateMap) {
+      console.log("Updating map!");
+      this.updateMapMarkers();
+    }
+  }
+
+  updateMapMarkers = async () => {
+    console.log("Updating markers");
+
+    let markers = [];
+    if (UserData.location != null) {
       let userMarker = {
         latlng: {
-          latitude: location["coords"]["latitude"],
-          longitude: location["coords"]["longitude"],
+          latitude: UserData.location.latitude,
+          longitude: UserData.location.longitude,
         },
         title: "You",
         image: require("../../assets/map-marker-user.png"),
       };
 
-      this.setState({
-        location: {
-          latitude: location["coords"]["latitude"],
-          longitude: location["coords"]["longitude"],
-          latitudeDelta: 0.2,
-          longitudeDelta: 0.2,
-        },
-        markers: [...this.state.markers, userMarker],
+      markers.push(userMarker);
+    }
+
+    db.ref()
+      .child("images")
+      .once("value")
+      .then((snapshot) => {
+        snapshot.forEach((entry) => {
+          markers = this.state.markers;
+          markers.push({
+            latlng: {
+              latitude: entry.val().latitude,
+              longitude: entry.val().longitude,
+            },
+            title: "Other user",
+            image: require("../../assets/map-marker-light.png"),
+          });
+        });
+        console.log("Setting markers " + markers.length);
+        this.setState({
+          markers: markers,
+        });
       });
+
+    console.log("Setting markers " + markers.length);
+    this.setState({
+      markers: markers,
     });
-  }
+  };
 
   render() {
+    this.checkForMapUpdate();
     return (
       <SafeAreaView style={styles.container}>
         <MapView

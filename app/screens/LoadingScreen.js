@@ -13,12 +13,14 @@ import firebase from "firebase";
 
 class LoadingScreen extends Component {
   componentDidMount() {
-    /*
-    BackHandler.addEventListener("hardwareBackPress", () => {
-      // Overwrite back button press
-      return true;
-    });
-    */
+    this.backListener = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        // Overwrite back button press
+        console.log("BACK BUTTON");
+        return false;
+      }
+    );
 
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
@@ -39,6 +41,7 @@ class LoadingScreen extends Component {
   componentWillUnmount() {
     // Remove the event listener
     this.focusListener.remove();
+    this.backListener.remove();
   }
 
   render() {

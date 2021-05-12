@@ -53,10 +53,6 @@ class LoginScreen extends Component {
   };
 
   componentDidMount() {
-    BackHandler.addEventListener("hardwareBackPress", () => {
-      // Overwrite back button press
-      return true;
-    });
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       // The screen is focused
