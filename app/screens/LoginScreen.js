@@ -12,10 +12,11 @@ import TextButton from "../TextButton";
 import Expo from "expo";
 import * as Google from "expo-google-app-auth";
 import firebase from "firebase/app";
+import * as Facebook from "expo-facebook";
 
 class LoginScreen extends Component {
   signInWithGoogle = async () => {
-    console.log("LoginScreen.js | loggin in");
+    console.log("LoginScreen.js | loggin in with google");
     try {
       const logInResult = await Google.logInAsync({
         androidClientId:
@@ -26,13 +27,13 @@ class LoginScreen extends Component {
         console.log("Log in successful");
         console.log("Authenticating user");
 
-        // Build Firebase credential with the Facebook access token.
+        // Build Firebase credential with the access token.
         const credential = firebase.auth.GoogleAuthProvider.credential(
           logInResult.idToken,
           logInResult.accessToken
         );
 
-        // Sign in with credential from the Facebook user.
+        // Sign in with credential from the user.
         firebase
           .auth()
           .signInWithCredential(credential)
@@ -51,6 +52,8 @@ class LoginScreen extends Component {
       console.log("LoginScreen.js | error with login", error);
     }
   };
+
+  signInWithEmail() {}
 
   componentDidMount() {
     const { navigation } = this.props;
@@ -84,7 +87,15 @@ class LoginScreen extends Component {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.title}>MapShare</Text>
-        <View>
+        <View style={styles.buttonWrap}>
+          <TextButton
+            text="Sign in with email"
+            handlePress={() => {
+              this.signInWithEmail();
+            }}
+          />
+        </View>
+        <View style={styles.buttonWrap}>
           <TextButton
             text="Sign in with Google"
             handlePress={() => {
@@ -108,6 +119,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     paddingBottom: "10%",
+  },
+  buttonWrap: {
+    padding: "5%",
   },
 });
 

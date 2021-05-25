@@ -8,6 +8,7 @@ import firebase from "firebase";
 import { firebaseConfig } from "./config";
 import CameraScreen from "./app/screens/CameraScreen";
 import EditorScreen from "./app/screens/EditorScreen";
+import SettingsScreen from "./app/screens/SettingsScreen";
 
 const Navigator = createStackNavigator({
   Loading: {
@@ -24,6 +25,12 @@ const Navigator = createStackNavigator({
   },
   Map: {
     screen: MapScreen,
+    navigationOptions: {
+      headerShown: false,
+    },
+  },
+  Settings: {
+    screen: SettingsScreen,
     navigationOptions: {
       headerShown: false,
     },

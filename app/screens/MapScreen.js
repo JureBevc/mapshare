@@ -30,7 +30,7 @@ export default class MapScreen extends Component {
     console.log("Getting camera permission");
     const { status } = await Camera.requestPermissionsAsync();
     console.log(status);
-    this.state.hasCameraPermission = status === "granted";
+    this.setState({ hasCameraPermission: status === "granted" });
     if (onSuccess && this.state.hasCameraPermission) {
       onSuccess();
     }
@@ -40,7 +40,7 @@ export default class MapScreen extends Component {
     console.log("Getting location permission");
     let { status } = await Location.requestForegroundPermissionsAsync();
     console.log(status);
-    this.state.hasLocationPermission = status === "granted";
+    this.setState({ hasLocationPermission: status === "granted" });
     if (onSuccess && this.state.hasLocationPermission) {
       let location = await Location.getCurrentPositionAsync({
         accuracy: Location.LocationAccuracy.Lowest,
@@ -142,6 +142,27 @@ export default class MapScreen extends Component {
             </Marker>
           ))}
         </MapView>
+        <SafeAreaView>
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+            }}
+          >
+            <ImageButton
+              imageSource={require("../../assets/settings-icon.png")}
+              width={40}
+              height={40}
+              customStyle={{}}
+              handlePress={() => {
+                console.log("Opening settings");
+                this.props.navigation.navigate("Settings");
+              }}
+            />
+          </View>
+        </SafeAreaView>
+
         <View
           style={{
             flex: 1,
