@@ -25,7 +25,6 @@ class LoadingScreen extends Component {
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       // The screen is focused
-
       console.log("Loading screen checking if logged in");
       let user = firebase.auth().currentUser;
       if (user) {
@@ -36,12 +35,16 @@ class LoadingScreen extends Component {
         this.props.navigation.navigate("Login");
       }
     });
+
+    this.blurListener = navigation.addListener("didBlur", () => {
+      this.backListener.remove();
+    });
   }
 
   componentWillUnmount() {
     // Remove the event listener
     this.focusListener.remove();
-    this.backListener.remove();
+    this.blurListener.remove();
   }
 
   render() {

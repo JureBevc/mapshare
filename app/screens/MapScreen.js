@@ -8,15 +8,21 @@ import {
   StatusBar,
   Image,
   BackHandler,
+  TouchableHighlight,
+  Text,
 } from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
 import { Camera } from "expo-camera";
-import { Marker } from "react-native-maps";
+import { Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import UserData from "../UserData";
 import { db } from "../../config";
 import firebase from "firebase";
+import { debug } from "react-native-reanimated";
+import * as TaskManager from "expo-task-manager";
+
+const LOCATION_UPDATE = "locationUpdate";
 
 export default class MapScreen extends Component {
   state = {
@@ -58,10 +64,76 @@ export default class MapScreen extends Component {
         longitudeDelta: 0.2,
       };
 
+      UserData.initialLocation = UserData.location;
+
       this.setState({
-        location: UserData.location,
+        location: UserData.initialLocation,
       });
+
+      Location.requestBackgroundPermissionsAsync().then(async (res) => {
+        if (res.status === "granted") {
+          TaskManager.defineTask(
+            LOCATION_UPDATE,
+            async ({ data: { locations }, error }) => {
+              if (error) {
+                console.error(error);
+                return;
+              }
+              const [location] = locations;
+              console.log("Updating location");
+              console.log(location);
+              UserData.location = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.2,
+                longitudeDelta: 0.2,
+              };
+
+              this.updateUserMarker();
+            }
+          ).catch((error) => {
+            // Do nothing
+          });
+          Location.startLocationUpdatesAsync(LOCATION_UPDATE, {
+            accuracy: Location.Accuracy.Low,
+            distanceInterval: 3,
+            deferredUpdatesInterval: 3000,
+          });
+        }
+      });
+
       this.updateMapMarkers();
+    });
+
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      // Check if maps needs to be updated
+      this.checkForMapUpdate();
+
+      // Overwrite back button
+      this.backListener = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          // Disable back button press
+          return true;
+        }
+      );
+    });
+
+    // Remove listeners when not focused
+    this.blurListener = navigation.addListener("didBlur", () => {
+      if (this.backListener) this.backListener.remove();
+    });
+  }
+
+  componentWillUnmount() {
+    this.focusListener.remove();
+    this.blurListener.remove();
+
+    Location.hasStartedLocationUpdatesAsync(LOCATION_UPDATE).then((value) => {
+      if (value) {
+        Location.stopLocationUpdatesAsync(LOCATION_UPDATE);
+      }
     });
   }
 
@@ -73,10 +145,36 @@ export default class MapScreen extends Component {
     }
   }
 
+  updateUserMarker() {
+    let markers = this.state.markers;
+    // Add user marker
+    if (UserData.location != null) {
+      let userMarker = {
+        latlng: {
+          latitude: UserData.location.latitude,
+          longitude: UserData.location.longitude,
+        },
+        title: "You",
+        image: require("../../assets/map-marker-user.png"),
+      };
+
+      if (markers.length > 0) {
+        markers[0] = userMarker;
+      } else {
+        markers.push(userMarker);
+      }
+      this.setState({
+        markers: markers,
+      });
+    }
+  }
+
   updateMapMarkers = async () => {
     console.log("Updating markers");
 
     let markers = [];
+
+    // Add user marker
     if (UserData.location != null) {
       let userMarker = {
         latlng: {
@@ -90,6 +188,7 @@ export default class MapScreen extends Component {
       markers.push(userMarker);
     }
 
+    // Add markers fo other users
     db.ref()
       .child("images")
       .once("value")
@@ -101,6 +200,7 @@ export default class MapScreen extends Component {
               latitude: entry.val().latitude,
               longitude: entry.val().longitude,
             },
+            contentId: entry.val().imageId,
             title: "Other user",
             image: require("../../assets/map-marker-light.png"),
           });
@@ -117,8 +217,28 @@ export default class MapScreen extends Component {
     });
   };
 
+  markerPress(marker) {
+    if (marker.contentId) {
+      // Display marker content
+      console.log("Getting marker content");
+      firebase
+        .storage()
+        .ref()
+        .child("images/" + marker.contentId)
+        .getDownloadURL()
+        .then((url) => {
+          this.props.navigation.navigate("Content", {
+            imageURL: url,
+          });
+        })
+        .catch((error) => {
+          console.log("Error getting content");
+          console.log(error);
+        });
+    }
+  }
+
   render() {
-    this.checkForMapUpdate();
     return (
       <SafeAreaView style={styles.container}>
         <MapView
@@ -126,6 +246,7 @@ export default class MapScreen extends Component {
           style={styles.map}
           mapType="hybrid"
           maxZoomLevel={15}
+          rotateEnabled={false}
         >
           {this.state.markers.map((marker, index) => (
             <Marker
@@ -133,6 +254,7 @@ export default class MapScreen extends Component {
               key={index}
               coordinate={marker.latlng}
               title={marker.title}
+              onPress={() => this.markerPress(marker)}
             >
               <Image
                 source={marker.image}
@@ -148,6 +270,7 @@ export default class MapScreen extends Component {
               position: "absolute",
               left: 0,
               top: 0,
+              padding: "5%",
             }}
           >
             <ImageButton
@@ -183,6 +306,7 @@ export default class MapScreen extends Component {
                 borderRadius: 45,
                 borderWidth: 2,
                 padding: 5,
+                opacity: 0.8,
               }}
               handlePress={() => {
                 if (this.state.hasCameraPermission) {

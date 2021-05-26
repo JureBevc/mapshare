@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import Global from "./GlobalParameters";
 
 export default function TextButton({ text, handlePress }) {
   return (
@@ -11,16 +12,14 @@ export default function TextButton({ text, handlePress }) {
       <TouchableOpacity
         onPress={handlePress}
         style={{
-          backgroundColor: "#fff",
-          borderWidth: 1,
-          borderColor: "#000",
+          backgroundColor: Global.GRAY,
           borderRadius: 3,
         }}
       >
         <Text
           style={{
             fontSize: 20,
-            color: "#000",
+            color: Global.WHITE,
             alignContent: "center",
             flexWrap: "wrap",
             alignSelf: "baseline",

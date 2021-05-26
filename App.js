@@ -9,6 +9,7 @@ import { firebaseConfig } from "./config";
 import CameraScreen from "./app/screens/CameraScreen";
 import EditorScreen from "./app/screens/EditorScreen";
 import SettingsScreen from "./app/screens/SettingsScreen";
+import ContentScreen from "./app/screens/ContentScreen";
 
 const Navigator = createStackNavigator({
   Loading: {
@@ -43,6 +44,12 @@ const Navigator = createStackNavigator({
   },
   Editor: {
     screen: EditorScreen,
+    navigationOptions: {
+      headerShown: false,
+    },
+  },
+  Content: {
+    screen: ContentScreen,
     navigationOptions: {
       headerShown: false,
     },

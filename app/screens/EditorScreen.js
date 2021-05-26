@@ -6,6 +6,7 @@ import UserData from "../UserData";
 import firebase from "firebase";
 import { db } from "../../config";
 import uuid from "react-native-uuid";
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default class EditorScreen extends Component {
   constructor(props) {
@@ -13,22 +14,45 @@ export default class EditorScreen extends Component {
   }
 
   uploadImage = async (location, image) => {
+    if (this.uploading) return;
+    this.uploading = true;
+
+    navigation = this.props.navigation;
+
     console.log("Uploading photo");
     try {
+      console.log("Uploading photo1");
       const imagesRef = db.ref("images");
       const newImageRef = imagesRef.push();
 
-      const response = await fetch(image.uri);
+      console.log("Uploading photo2");
+      const compressed = await ImageManipulator.manipulateAsync(
+        image.uri,
+        [{ resize: { width: 1080 } }],
+        { format: "jpeg", compress: 0.5 }
+      );
+      console.log("Uploading photo3");
+      console.log(compressed.uri);
+      const response = await fetch(compressed.uri);
+      console.log("Uploading photo4");
       const imageBlob = await response.blob();
-      const id = uuid.v4();
+      console.log("Uploading photo5");
 
-      console.log("--");
-      console.log(image.uri);
+      const id = uuid.v4();
+      console.log("Uploading photo6");
+
       console.log("--");
       console.log(id);
       console.log("--");
       console.log(imageBlob.size);
       console.log("--");
+
+      newImageRef.set({
+        user: firebase.auth().currentUser.uid,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        imageId: id,
+      });
 
       firebase
         .storage()
@@ -37,19 +61,14 @@ export default class EditorScreen extends Component {
         .put(imageBlob)
         .then(function (snapshot) {
           console.log("Image uploaded!");
+          navigation.navigate("Map", { updateMap: true });
         });
-
-      /*newImageRef.set({
-        user: firebase.auth().currentUser.uid,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        imageId: id,
-      });*/
     } catch (err) {
       console.log("ERROR UPLOADING IMAGE");
-      console.error(err);
+      navigation.navigate("Map", { updateMap: true });
+      //console.error(err);
     }
-    this.props.navigation.navigate("Map", { updateMap: true });
+    this.uploading = false;
   };
 
   render() {
