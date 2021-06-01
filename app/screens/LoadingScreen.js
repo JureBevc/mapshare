@@ -13,31 +13,29 @@ import firebase from "firebase";
 
 class LoadingScreen extends Component {
   componentDidMount() {
-    this.backListener = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        // Overwrite back button press
-        console.log("BACK BUTTON");
-        return false;
-      }
-    );
-
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       // The screen is focused
-      console.log("Loading screen checking if logged in");
-      let user = firebase.auth().currentUser;
-      if (user) {
-        console.log("User already authenticated");
-        this.props.navigation.navigate("Map");
+      let params = this.props.navigation.state.params;
+      if (params && params.customRedirect) {
+        params.customRedirect((stateName, data) => {
+          this.props.navigation.navigate(stateName, data);
+        });
       } else {
-        console.log("No current user");
-        this.props.navigation.navigate("Login");
+        console.log("Loading screen checking if logged in");
+        let user = firebase.auth().currentUser;
+        if (user) {
+          console.log("User already authenticated");
+          this.props.navigation.navigate("Map");
+        } else {
+          console.log("No current user");
+          this.props.navigation.navigate("Login");
+        }
       }
     });
 
     this.blurListener = navigation.addListener("didBlur", () => {
-      this.backListener.remove();
+      //this.backListener.remove();
     });
   }
 

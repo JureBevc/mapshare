@@ -56,6 +56,7 @@ export default class MapScreen extends Component {
   };
 
   componentDidMount() {
+    console.log("MOUNT");
     this.getLocationPermission((location) => {
       UserData.location = {
         latitude: location["coords"]["latitude"],
@@ -70,37 +71,25 @@ export default class MapScreen extends Component {
         location: UserData.initialLocation,
       });
 
-      Location.requestBackgroundPermissionsAsync().then(async (res) => {
-        if (res.status === "granted") {
-          TaskManager.defineTask(
-            LOCATION_UPDATE,
-            async ({ data: { locations }, error }) => {
-              if (error) {
-                console.error(error);
-                return;
-              }
-              const [location] = locations;
-              console.log("Updating location");
-              console.log(location);
-              UserData.location = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.2,
-                longitudeDelta: 0.2,
-              };
+      Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Low,
+          distanceInterval: 3,
+          deferredUpdatesInterval: 3000,
+        },
+        (location) => {
+          console.log("Updating location");
+          //console.log(location);
+          UserData.location = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.2,
+            longitudeDelta: 0.2,
+          };
 
-              this.updateUserMarker();
-            }
-          ).catch((error) => {
-            // Do nothing
-          });
-          Location.startLocationUpdatesAsync(LOCATION_UPDATE, {
-            accuracy: Location.Accuracy.Low,
-            distanceInterval: 3,
-            deferredUpdatesInterval: 3000,
-          });
+          this.updateUserMarker();
         }
-      });
+      );
 
       this.updateMapMarkers();
     });
@@ -129,6 +118,10 @@ export default class MapScreen extends Component {
   componentWillUnmount() {
     this.focusListener.remove();
     this.blurListener.remove();
+
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
 
     Location.hasStartedLocationUpdatesAsync(LOCATION_UPDATE).then((value) => {
       if (value) {
