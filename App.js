@@ -24,14 +24,14 @@ const Navigator = createStackNavigator({
       headerShown: false,
     },
   },
-  Map: {
-    screen: MapScreen,
+  Settings: {
+    screen: SettingsScreen,
     navigationOptions: {
       headerShown: false,
     },
   },
-  Settings: {
-    screen: SettingsScreen,
+  Map: {
+    screen: MapScreen,
     navigationOptions: {
       headerShown: false,
     },

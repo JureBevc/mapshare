@@ -23,6 +23,14 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
+      },
+      "config": {
+        "googleSignIn": {
+          "certificateHash": "91B991C260841F496C18E337BB036FEB12A3C06F92577F5813520255C806AAD9"
+        },
+        "googleMaps": {
+          "apiKey": "AIzaSyAU7ZzhKFTbEzdpY1OQsSsXdmLUhlI1R4k"
+        }
       }
     },
     "web": {

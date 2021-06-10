@@ -21,22 +21,18 @@ export default class EditorScreen extends Component {
 
     console.log("Uploading photo");
     try {
-      console.log("Uploading photo1");
       const imagesRef = db.ref("images");
       const newImageRef = imagesRef.push();
 
-      console.log("Uploading photo2");
       const compressed = await ImageManipulator.manipulateAsync(
         image.uri,
         [{ resize: { width: 1080 } }],
         { format: "jpeg", compress: 0.5 }
       );
-      console.log("Uploading photo3");
-      console.log(compressed.uri);
+
       const response = await fetch(compressed.uri);
-      console.log("Uploading photo4");
+
       const imageBlob = await response.blob();
-      console.log("Uploading photo5");
 
       const id = uuid.v4();
       console.log("Uploading photo6");
@@ -52,6 +48,8 @@ export default class EditorScreen extends Component {
         latitude: location.latitude,
         longitude: location.longitude,
         imageId: id,
+        displayName: firebase.auth().currentUser.displayName,
+        photoURL: firebase.auth().currentUser.photoURL,
       });
 
       firebase

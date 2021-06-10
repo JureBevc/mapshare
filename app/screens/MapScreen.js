@@ -19,8 +19,6 @@ import * as Location from "expo-location";
 import UserData from "../UserData";
 import { db } from "../../config";
 import firebase from "firebase";
-import { debug } from "react-native-reanimated";
-import * as TaskManager from "expo-task-manager";
 
 const LOCATION_UPDATE = "locationUpdate";
 
@@ -57,6 +55,7 @@ export default class MapScreen extends Component {
 
   componentDidMount() {
     console.log("MOUNT");
+    UserData.updateUserPreferences(firebase.auth().currentUser);
     this.getLocationPermission((location) => {
       UserData.location = {
         latitude: location["coords"]["latitude"],
@@ -94,8 +93,12 @@ export default class MapScreen extends Component {
       this.updateMapMarkers();
     });
 
+    this.markersUpdateInterval = setInterval(this.updateMapMarkers, 10 * 1000);
+
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
+      this.focused = true;
+      console.log("Map screen focus");
       // Check if maps needs to be updated
       this.checkForMapUpdate();
 
@@ -119,8 +122,8 @@ export default class MapScreen extends Component {
     this.focusListener.remove();
     this.blurListener.remove();
 
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
+    if (this.markersUpdateInterval) {
+      clearInterval(this.markersUpdateInterval);
     }
 
     Location.hasStartedLocationUpdatesAsync(LOCATION_UPDATE).then((value) => {
@@ -163,8 +166,10 @@ export default class MapScreen extends Component {
   }
 
   updateMapMarkers = async () => {
+    if (!this.focused) {
+      return;
+    }
     console.log("Updating markers");
-
     let markers = [];
 
     // Add user marker
@@ -194,7 +199,7 @@ export default class MapScreen extends Component {
               longitude: entry.val().longitude,
             },
             contentId: entry.val().imageId,
-            title: "Other user",
+            title: entry.val().displayName,
             image: require("../../assets/map-marker-light.png"),
           });
         });
@@ -202,6 +207,9 @@ export default class MapScreen extends Component {
         this.setState({
           markers: markers,
         });
+      })
+      .catch((err) => {
+        console.error(err);
       });
 
     console.log("Setting markers " + markers.length);
@@ -235,7 +243,7 @@ export default class MapScreen extends Component {
     return (
       <SafeAreaView style={styles.container}>
         <MapView
-          region={this.state.location}
+          initialRegion={this.state.location}
           style={styles.map}
           mapType="hybrid"
           maxZoomLevel={15}

@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Image,
   SafeAreaView,
   StatusBar,
   BackHandler,
@@ -15,12 +16,21 @@ import firebase from "firebase/app";
 import * as Facebook from "expo-facebook";
 
 class LoginScreen extends Component {
+  updateUserInfo = async (uid) => {
+    if (this.uploading) return;
+    this.uploading = true;
+
+    this.uploading = false;
+  };
+
   signInWithGoogle = async () => {
     console.log("LoginScreen.js | loggin in with google");
     try {
       const logInResult = await Google.logInAsync({
         androidClientId:
           "961970114032-jekqtd1ug6ugio4ql485g3fj0jdug14g.apps.googleusercontent.com",
+        androidStandaloneAppClientId:
+          "961970114032-h0k9tp0jbgeqc1kbf3rlp66bv20j7gbm.apps.googleusercontent.com",
       });
 
       if (logInResult.type === "success") {
@@ -59,22 +69,26 @@ class LoginScreen extends Component {
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       // The screen is focused
-
+      console.log("Login focused");
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           console.log("User authenticated");
-          this.props.navigation.navigate("Map");
+          navigation.navigate("Map");
         }
       });
 
       let user = firebase.auth().currentUser;
       if (user) {
         console.log("User already authenticated");
-        this.props.navigation.navigate("Map");
-      } else {
-        console.log("No current user");
+        navigation.navigate("Map");
       }
     });
+
+    let user = firebase.auth().currentUser;
+    if (user) {
+      console.log("User already authenticated");
+      navigation.navigate("Map");
+    }
   }
 
   componentWillUnmount() {
@@ -86,7 +100,10 @@ class LoginScreen extends Component {
     console.log("Login screen");
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>MapShare</Text>
+        <Image
+          style={styles.titleLogo}
+          source={require("../../assets/title-logo.png")}
+        ></Image>
         <View style={styles.buttonWrap}>
           <TextButton
             text="Sign in with email"
@@ -116,9 +133,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  title: {
-    fontSize: 25,
-    paddingBottom: "10%",
+  titleLogo: {
+    width: "40%",
+    height: "30%",
   },
   buttonWrap: {
     padding: "5%",
