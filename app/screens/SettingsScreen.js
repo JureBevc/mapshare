@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Image,
   SafeAreaView,
   StatusBar,
   BackHandler,
@@ -26,6 +27,16 @@ export default class SettingsScreen extends Component {
     return (
       <SafeAreaView style={styles.container}>
         <View>
+          <Image
+            style={{ width: 100, height: 100, margin: "5%" }}
+            source={{ uri: firebase.auth().currentUser.photoURL }}
+          />
+          <Text style={{ fontSize: 25, margin: "5%" }}>
+            {firebase.auth().currentUser.displayName}
+          </Text>
+        </View>
+
+        <View>
           <TextButton
             text="Sign out"
             handlePress={() => {
@@ -42,7 +53,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Global.WHITE,
-    justifyContent: "center",
+    justifyContent: "space-around",
     alignItems: "center",
   },
 });

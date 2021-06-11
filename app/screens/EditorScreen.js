@@ -1,5 +1,11 @@
 import React, { Component } from "react";
-import { View, Image, StyleSheet, SafeAreaView } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+  ToastAndroid,
+} from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
 import UserData from "../UserData";
@@ -20,6 +26,7 @@ export default class EditorScreen extends Component {
     navigation = this.props.navigation;
 
     console.log("Uploading photo");
+    ToastAndroid.show("Uploading photo...", ToastAndroid.SHORT);
     try {
       const imagesRef = db.ref("images");
       const newImageRef = imagesRef.push();
@@ -59,6 +66,10 @@ export default class EditorScreen extends Component {
         .put(imageBlob)
         .then(function (snapshot) {
           console.log("Image uploaded!");
+          ToastAndroid.show(
+            "You image has been published to the world!",
+            ToastAndroid.LONG
+          );
           navigation.navigate("Map", { updateMap: true });
         });
     } catch (err) {

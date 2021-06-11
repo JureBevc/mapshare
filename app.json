@@ -33,6 +33,15 @@
         }
       }
     },
+    "androidStatusBar": {
+      "backgroundColor": "#CFCFCF",
+      "translucent": false
+    },
+    "androidNavigationBar": {
+      "visible": true,
+      "barStyle": "light-content",
+      "backgroundColor": "#CFCFCF"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     }

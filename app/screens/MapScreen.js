@@ -10,6 +10,7 @@ import {
   BackHandler,
   TouchableHighlight,
   Text,
+  ToastAndroid,
 } from "react-native";
 import ImageButton from "../ImageButton";
 import Global from "../GlobalParameters";
@@ -55,6 +56,7 @@ export default class MapScreen extends Component {
 
   componentDidMount() {
     console.log("MOUNT");
+    this.mounted = true;
     UserData.updateUserPreferences(firebase.auth().currentUser);
     this.getLocationPermission((location) => {
       UserData.location = {
@@ -114,12 +116,13 @@ export default class MapScreen extends Component {
 
     // Remove listeners when not focused
     this.blurListener = navigation.addListener("didBlur", () => {
+      this.focused = false;
       if (this.backListener) this.backListener.remove();
     });
   }
 
   componentWillUnmount() {
-    this.focused = false;
+    this.mounted = false;
     this.focusListener.remove();
     this.blurListener.remove();
 
@@ -168,19 +171,26 @@ export default class MapScreen extends Component {
   }
 
   updateMapMarkers = async () => {
-    if (!this.focused) {
+    console.log("Updating markers?");
+    if (!this.mounted) {
+      console.log("Not updaing markers: Not mounted");
       return;
     }
 
-    let currentTime = new Date().getSeconds();
+    let currentTime = new Date().getTime() / 1000;
     if (
       this.timeSinceUpdatedMarkers &&
-      currentTime - this.timeSinceUpdatedMarkers < 10
+      currentTime - this.timeSinceUpdatedMarkers < 2
     ) {
+      console.log(
+        "Not updaing markers: Not enough time passed " +
+          (currentTime - this.timeSinceUpdatedMarkers)
+      );
       return;
     }
     this.timeSinceUpdatedMarkers = currentTime;
 
+    ToastAndroid.show("Updating your world", ToastAndroid.SHORT);
     console.log("Updating markers");
     let markers = [];
 
@@ -278,13 +288,13 @@ export default class MapScreen extends Component {
               <Image
                 source={{ uri: marker.userPhotoURL }}
                 style={{
+                  borderRadius: 45,
+                  borderWidth: 2,
                   position: "absolute",
                   top: 5,
                   left: 12,
                   width: 25,
                   height: 25,
-                  borderRadius: 45,
-                  borderWidth: 2,
                 }}
                 resizeMode="contain"
               />
