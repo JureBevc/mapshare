@@ -93,7 +93,7 @@ export default class MapScreen extends Component {
       this.updateMapMarkers();
     });
 
-    this.markersUpdateInterval = setInterval(this.updateMapMarkers, 10 * 1000);
+    //this.markersUpdateInterval = setInterval(this.updateMapMarkers, 10 * 1000);
 
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
@@ -119,6 +119,7 @@ export default class MapScreen extends Component {
   }
 
   componentWillUnmount() {
+    this.focused = false;
     this.focusListener.remove();
     this.blurListener.remove();
 
@@ -142,6 +143,7 @@ export default class MapScreen extends Component {
   }
 
   updateUserMarker() {
+    if (!this.focused) return;
     let markers = this.state.markers;
     // Add user marker
     if (UserData.location != null) {
@@ -169,6 +171,16 @@ export default class MapScreen extends Component {
     if (!this.focused) {
       return;
     }
+
+    let currentTime = new Date().getSeconds();
+    if (
+      this.timeSinceUpdatedMarkers &&
+      currentTime - this.timeSinceUpdatedMarkers < 10
+    ) {
+      return;
+    }
+    this.timeSinceUpdatedMarkers = currentTime;
+
     console.log("Updating markers");
     let markers = [];
 
@@ -201,6 +213,7 @@ export default class MapScreen extends Component {
             contentId: entry.val().imageId,
             title: entry.val().displayName,
             image: require("../../assets/map-marker-light.png"),
+            userPhotoURL: entry.val().photoURL,
           });
         });
         console.log("Setting markers " + markers.length);
@@ -262,6 +275,19 @@ export default class MapScreen extends Component {
                 style={styles.marker}
                 resizeMode="contain"
               />
+              <Image
+                source={{ uri: marker.userPhotoURL }}
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  left: 12,
+                  width: 25,
+                  height: 25,
+                  borderRadius: 45,
+                  borderWidth: 2,
+                }}
+                resizeMode="contain"
+              />
             </Marker>
           ))}
         </MapView>
@@ -278,7 +304,14 @@ export default class MapScreen extends Component {
               imageSource={require("../../assets/settings-icon.png")}
               width={40}
               height={40}
-              customStyle={{}}
+              customStyle={{
+                backgroundColor: Global.GRAY,
+                borderColor: Global.GRAY,
+                borderRadius: 45,
+                borderWidth: 2,
+                padding: 5,
+                opacity: 0.8,
+              }}
               handlePress={() => {
                 console.log("Opening settings");
                 this.props.navigation.navigate("Settings");
@@ -290,12 +323,21 @@ export default class MapScreen extends Component {
         <View
           style={{
             flex: 1,
-            justifyContent: "flex-end",
-            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
             paddingBottom: "5%",
+            paddingLeft: "5%",
+            paddingRight: "5%",
             pointerEvents: "none",
           }}
         >
+          <View
+            style={{
+              width: 50,
+              height: 50,
+            }}
+          ></View>
           <View>
             <ImageButton
               imageSource={require("../../assets/camera.png")}
@@ -307,7 +349,7 @@ export default class MapScreen extends Component {
                 borderRadius: 45,
                 borderWidth: 2,
                 padding: 5,
-                opacity: 0.8,
+                opacity: 0.9,
               }}
               handlePress={() => {
                 if (this.state.hasCameraPermission) {
@@ -322,6 +364,25 @@ export default class MapScreen extends Component {
                       });
                   });
                 }
+              }}
+            />
+          </View>
+
+          <View>
+            <ImageButton
+              imageSource={require("../../assets/refresh.png")}
+              width={50}
+              height={50}
+              customStyle={{
+                backgroundColor: Global.WHITE,
+                borderColor: Global.GRAY,
+                borderRadius: 45,
+                borderWidth: 2,
+                padding: 5,
+                opacity: 0.8,
+              }}
+              handlePress={() => {
+                this.updateMapMarkers();
               }}
             />
           </View>
