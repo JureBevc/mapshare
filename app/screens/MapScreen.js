@@ -22,6 +22,7 @@ import { db } from "../../config";
 import firebase from "firebase";
 
 const LOCATION_UPDATE = "locationUpdate";
+const MAX_CONTENT_AGE_HOURS = 24;
 
 export default class MapScreen extends Component {
   state = {
@@ -147,6 +148,7 @@ export default class MapScreen extends Component {
 
   updateUserMarker() {
     if (!this.focused) return;
+    if (!this.mounted) return;
     let markers = this.state.markers;
     // Add user marker
     if (UserData.location != null) {
@@ -171,7 +173,6 @@ export default class MapScreen extends Component {
   }
 
   updateMapMarkers = async () => {
-    console.log("Updating markers?");
     if (!this.mounted) {
       console.log("Not updaing markers: Not mounted");
       return;
@@ -213,18 +214,29 @@ export default class MapScreen extends Component {
       .child("images")
       .once("value")
       .then((snapshot) => {
+        let currentTime = new Date().getTime();
         snapshot.forEach((entry) => {
-          markers = this.state.markers;
-          markers.push({
-            latlng: {
-              latitude: entry.val().latitude,
-              longitude: entry.val().longitude,
-            },
-            contentId: entry.val().imageId,
-            title: entry.val().displayName,
-            image: require("../../assets/map-marker-light.png"),
-            userPhotoURL: entry.val().photoURL,
-          });
+          let ageInHours = (currentTime - entry.val().time) / (1000 * 60 * 60);
+          if (ageInHours >= 0 && ageInHours <= MAX_CONTENT_AGE_HOURS) {
+            markers = this.state.markers;
+            markers.push({
+              latlng: {
+                latitude: entry.val().latitude,
+                longitude: entry.val().longitude,
+              },
+              contentId: entry.val().imageId,
+              title: entry.val().displayName,
+              description:
+                "Posted " +
+                (ageInHours >= 1
+                  ? Math.round(ageInHours) + " hrs."
+                  : Math.round(ageInHours * 60) + " min.") +
+                " ago. Tap to view.",
+              image: require("../../assets/map-marker-light.png"),
+              userPhotoURL: entry.val().photoURL,
+              publishTime: entry.val().time,
+            });
+          }
         });
         console.log("Setting markers " + markers.length);
         this.setState({
@@ -242,23 +254,27 @@ export default class MapScreen extends Component {
   };
 
   markerPress(marker) {
-    if (marker.contentId) {
-      // Display marker content
-      console.log("Getting marker content");
-      firebase
-        .storage()
-        .ref()
-        .child("images/" + marker.contentId)
-        .getDownloadURL()
-        .then((url) => {
-          this.props.navigation.navigate("Content", {
-            imageURL: url,
+    if (this.lastmarkerPress && this.lastmarkerPress == marker) {
+      if (marker.contentId) {
+        // Display marker content
+        console.log("Getting marker content");
+        firebase
+          .storage()
+          .ref()
+          .child("images/" + marker.contentId)
+          .getDownloadURL()
+          .then((url) => {
+            this.props.navigation.navigate("Content", {
+              imageURL: url,
+            });
+          })
+          .catch((error) => {
+            console.log("Error getting content");
+            console.log(error);
           });
-        })
-        .catch((error) => {
-          console.log("Error getting content");
-          console.log(error);
-        });
+      }
+    } else {
+      this.lastmarkerPress = marker;
     }
   }
 
@@ -278,7 +294,9 @@ export default class MapScreen extends Component {
               key={index}
               coordinate={marker.latlng}
               title={marker.title}
+              description={marker.description}
               onPress={() => this.markerPress(marker)}
+              onCalloutPress={() => this.markerPress(marker)}
             >
               <Image
                 source={marker.image}

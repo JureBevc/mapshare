@@ -57,6 +57,7 @@ export default class EditorScreen extends Component {
         imageId: id,
         displayName: firebase.auth().currentUser.displayName,
         photoURL: firebase.auth().currentUser.photoURL,
+        time: new Date().getTime(),
       });
 
       firebase
