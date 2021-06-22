@@ -1,8 +1,39 @@
 import React, { Component } from "react";
-import { Image, Text, View, StyleSheet } from "react-native";
+import { Image, Text, View, StyleSheet, BackHandler } from "react-native";
 import Global from "../GlobalParameters";
 
 export class ContentScreen extends Component {
+  componentDidMount() {
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      this.focused = true;
+      console.log("Content screen focus");
+
+      // Overwrite back button
+      this.backListener = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          // Disable back button press
+          return false;
+        }
+      );
+    });
+
+    this.blurListener = navigation.addListener("didBlur", () => {
+      this.focused = false;
+      if (this.backListener) this.backListener.remove();
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.blurListener) {
+      this.blurListener.remove();
+    }
+    if (this.focusListener) {
+      this.focusListener.remove();
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>

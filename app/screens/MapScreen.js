@@ -80,7 +80,7 @@ export default class MapScreen extends Component {
           deferredUpdatesInterval: 3000,
         },
         (location) => {
-          console.log("Updating location");
+          //console.log("Updating location");
           //console.log(location);
           UserData.location = {
             latitude: location.coords.latitude,
@@ -136,6 +136,13 @@ export default class MapScreen extends Component {
         Location.stopLocationUpdatesAsync(LOCATION_UPDATE);
       }
     });
+
+    if (this.blurListener) {
+      this.blurListener.remove();
+    }
+    if (this.focusListener) {
+      this.focusListener.remove();
+    }
   }
 
   checkForMapUpdate() {
@@ -284,7 +291,7 @@ export default class MapScreen extends Component {
         <MapView
           initialRegion={this.state.location}
           style={styles.map}
-          mapType="hybrid"
+          mapType="satellite"
           maxZoomLevel={15}
           rotateEnabled={false}
         >
@@ -364,6 +371,7 @@ export default class MapScreen extends Component {
             style={{
               width: 50,
               height: 50,
+              padding: 5,
             }}
           ></View>
           <View>

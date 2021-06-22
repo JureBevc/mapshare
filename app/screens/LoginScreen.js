@@ -104,17 +104,21 @@ class LoginScreen extends Component {
           style={styles.titleLogo}
           source={require("../../assets/title-logo.png")}
         ></Image>
-        <View style={styles.buttonWrap}>
-          <TextButton
-            text="Sign in with email"
-            handlePress={() => {
-              this.signInWithEmail();
-            }}
-          />
-        </View>
+        <View style={styles.buttonWrap}></View>
         <View style={styles.buttonWrap}>
           <TextButton
             text="Sign in with Google"
+            backgroundStyle={{
+              backgroundColor: Global.WHITE,
+              borderRadius: 10,
+              borderColor: "#DB4437",
+              borderWidth: 2,
+            }}
+            customStyle={{
+              fontSize: 20,
+              color: "#DB4437",
+              padding: 5,
+            }}
             handlePress={() => {
               this.signInWithGoogle();
             }}
